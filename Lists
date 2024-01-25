@@ -1,0 +1,28 @@
+import os
+
+# Function to extract names of all species folders
+def extract_species_names(base_folder, species_folder):
+    species_path = os.path.join(base_folder, species_folder)
+
+    species_names = [folder for folder in os.listdir(species_path) if os.path.isdir(os.path.join(species_path, folder))]
+
+    return species_names
+
+# Function to write species names to a text file
+def write_species_names_to_file(species_names, output_file):
+    with open(output_file, 'w') as file:
+        for species_name in species_names:
+            file.write(species_name + '\n')
+
+if __name__ == "__main__":
+    base_folder = r"D:\BSCS\FYP\mushroom_dataset"
+    species_folder = "Mushroom species"
+    output_file = "species_names.txt"
+
+    # Extract species names
+    species_names = extract_species_names(base_folder, species_folder)
+
+    # Write species names to a text file
+    write_species_names_to_file(species_names, output_file)
+
+    print(f"Species names have been written to {output_file}")
