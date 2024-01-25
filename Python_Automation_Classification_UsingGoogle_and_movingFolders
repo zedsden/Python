@@ -1,0 +1,74 @@
+import os
+from googlesearch import search as google_search
+import shutil
+from fake_useragent import UserAgent
+
+# Function to perform Google search
+def search(query):
+    try:
+        user_agent = UserAgent()
+        search_results = list(google_search(query, num=5, stop=5, pause=2, user_agent=user_agent.random))
+        print(f"Query: {query}\nSearch Results: {search_results}")
+        return search_results
+    except Exception as e:
+        print(f"Error in Google search: {e}")
+        return []
+
+# Function to classify species based on Google search results
+def classify_species(species_name):
+    # Example classification logic using keywords in search results
+    keywords_edible = ["edible mushroom", "safe to eat mushroom", "culinary uses of", "mushroom recipes"]
+    keywords_poisonous = ["poisonous mushroom", "toxic mushroom", "symptoms of mushroom poisoning"]
+
+    edible_count = 0
+    poisonous_count = 0
+
+    for keyword in keywords_edible:
+        if any(keyword in result.lower() for result in search(species_name + " " + keyword)):
+            edible_count += 1
+
+    for keyword in keywords_poisonous:
+        if any(keyword in result.lower() for result in search(species_name + " " + keyword)):
+            poisonous_count += 1
+
+    # Determine classification based on majority of occurrences
+    if edible_count > poisonous_count:
+        print(f"Species: {species_name} | Classification: edible | Edible Count: {edible_count} | Poisonous Count: {poisonous_count}")
+        return "edible"
+    elif poisonous_count > edible_count:
+        print(f"Species: {species_name} | Classification: poisonous | Edible Count: {edible_count} | Poisonous Count: {poisonous_count}")
+        return "poisonous"
+    else:
+        print(f"Species: {species_name} | Classification: unknown | Edible Count: {edible_count} | Poisonous Count: {poisonous_count}")
+        return "unknown"
+
+# Function to move species folders to their respective classes
+def move_species_to_classes(base_folder, species_folder, classes_folder):
+    species_path = os.path.join(base_folder, species_folder)
+    class_folder = os.path.join(base_folder, classes_folder)
+
+    if not os.path.exists(class_folder):
+        os.makedirs(class_folder)
+
+    for species_name in os.listdir(species_path):
+        species_folder_path = os.path.join(species_path, species_name)
+
+        # Classify the species based on search results
+        species_class = classify_species(species_name)
+
+        # Create or move to the class folder
+        class_species_folder = os.path.join(class_folder, species_class)
+        if not os.path.exists(class_species_folder):
+            os.makedirs(class_species_folder)
+
+        # Move the species folder to the class folder
+        destination_path = os.path.join(class_species_folder, species_name)
+        shutil.move(species_folder_path, destination_path)
+        print(f"Moved {species_name} to {class_species_folder}")
+
+if __name__ == "__main__":
+    base_folder = r"D:\BSCS\FYP\mushroom_dataset"
+    species_folder = "Mushroom species"
+    classes_folder = "Classes"
+
+    move_species_to_classes(base_folder, species_folder, classes_folder)
