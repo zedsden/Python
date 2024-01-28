@@ -1,0 +1,50 @@
+import os
+import random
+import shutil
+
+def balance_classes(base_folder, classes_folder):
+    class_path = os.path.join(base_folder, classes_folder)
+
+    # Get a list of class folders
+    classes = [folder for folder in os.listdir(class_path) if os.path.isdir(os.path.join(class_path, folder))]
+
+    for class_name in classes:
+        class_folder_path = os.path.join(class_path, class_name)
+
+        # Get a list of species subfolders in the current class
+        species_folders = [folder for folder in os.listdir(class_folder_path) if os.path.isdir(os.path.join(class_folder_path, folder))]
+
+        # Determine the minimum number of images across all species subfolders
+        min_images = min([len(os.listdir(os.path.join(class_folder_path, species))) for species in species_folders])
+
+        # Create a new balanced folder for the current class
+        balanced_class_folder = os.path.join(class_folder_path, "Balanced")
+        os.makedirs(balanced_class_folder, exist_ok=True)
+
+        # Randomly select a subset of images from each species subfolder to achieve the minimum number
+        for species in species_folders:
+            species_folder_path = os.path.join(class_folder_path, species)
+            balanced_species_folder = os.path.join(balanced_class_folder, species)
+            os.makedirs(balanced_species_folder, exist_ok=True)
+
+            # Get a random subset of images
+            species_images = os.listdir(species_folder_path)
+            random.shuffle(species_images)
+            selected_images = species_images[:min_images]
+
+            # Copy the selected images to the balanced folder
+            for image in selected_images:
+                src_path = os.path.join(species_folder_path, image)
+                dest_path = os.path.join(balanced_species_folder, image)
+
+                try:
+                    shutil.copy(src_path, dest_path)
+                    print(f"Successfully copied {image} to {balanced_species_folder}")
+                except PermissionError as e:
+                    print(f"Permission error: {e}. Skipped copying {image} to {balanced_species_folder}")
+
+if __name__ == "__main__":
+    base_folder = r"D:\BSCS\FYP\mushroom_dataset"
+    classes_folder = "Classes"
+
+    balance_classes(base_folder, classes_folder)
